@@ -1,0 +1,123 @@
+/***********************************************************************
+ *                                                                     *
+ * Light Automation File Format Processor                              *
+ *                                                                     *
+ * Team SCC111                                                         *
+ *                                                                     *
+ *                                                                     *
+ ***********************************************************************/
+
+
+int main()
+{
+  printf("Hello, World!\n");
+}
+
+#include <stdio.h>
+#include <strings.h>
+
+#define MAX_FIXTURES	10
+#define MAX_STRING_LEN	80
+#define	MAX_MAPPINGS	10
+#define	MAX_CUES	10
+#define	MAX_STEPS	20
+
+/* this type is used to hold cue information */
+typedef struct
+{
+  int id;
+  int channel;
+  int value;
+} cueType;
+
+
+
+/* Would send the actual DMX info to the lights */
+
+int do_DMX(int address, int channel, int value)
+{
+  printf("\t\tSending DMX command. Device address = %d, channel = %d, value %d\n", address, channel, value);
+  return 1;
+}
+
+int process_show_metadata(FILE *fp, char *showName, char *showDate)
+{
+  return 1;
+}
+
+int process_fixture_mappings(FILE *fp, int fixtureMappings[])
+{
+  return 1;
+}
+
+int process_cues(FILE *fp, cueType cues[MAX_CUES][MAX_STEPS])
+{
+  return (1);
+}
+
+int process_steps(FILE *fp, cueType cues[10][20], int fixtureMappings[])
+{
+  return (1);
+}
+
+int main()
+{
+
+  /* Open Lighting Automation File */
+  char *laffFileName = "laff.txt";
+  FILE *lfp = fopen(laffFileName, "r");
+
+  char playName[MAX_STRING_LEN], playDate[MAX_STRING_LEN];
+  int fixtureTypeCount, cueCount, stepsProcessed;
+  int fixtureMappings[MAX_FIXTURES];
+  cueType cues[MAX_CUES][MAX_STEPS];
+
+  /* Initialise all the feature mappings */ 
+  for (int i = 0; i < MAX_MAPPINGS; i++)
+    fixtureMappings[i] = -1;
+
+
+  /* Initialise all the cues */ 
+  for (int i = 0; i < MAX_CUES; i++)
+    for (int j = 0; j < MAX_STEPS; j++)
+      cues[i][j].id = cues[i][j].channel = cues[i][j].value = -1;
+
+  /* If we can open the file, read in the show meta data, the fixture mappings and the cues */
+  if (lfp && process_show_metadata(lfp, playName, playDate) &&
+      process_fixture_mappings(lfp, fixtureMappings) &&
+      (cueCount = process_cues(lfp, cues))) {
+
+    /* Display the show meta data */
+    printf("\n\nPlay name %s\n", playName);
+    printf("Play date %s\n\n", playDate);
+
+    /* Display the fixture mappings */
+    printf("Fixture Mappings are:\n");
+    for (int i = 0; i < 10; i++)
+      if (fixtureMappings[i] != -1)
+        printf("\tFixture %d is assigned to DMX address %d\n", i, fixtureMappings[i]);
+    printf("\n");
+
+    /* Display the cues */
+    printf("Cues are (%d cues): \n", cueCount);
+    for (int i = 0; i < 10; i++)
+      if (cues[i][0].id != -1)
+      {
+        printf("\tCue %d:\n", i);
+        for (int j = 0; j < 20; j++)
+          if (cues[i][j].id != -1)
+            printf("\t\tFIXTURE %d Channel %d Value %d\n", cues[i][j].id, cues[i][j].channel, cues[i][j].value);
+        printf("\n");
+      }
+
+    /* Run the show */
+    printf("\n\nPerformance underway:\n");
+    stepsProcessed = process_steps(lfp, cues, fixtureMappings);
+    printf("\n\nPerformance finished, processed %d DMX commands.\n", stepsProcessed);
+  }
+  else
+    /* Either opening the file or one of the function calls returned an error */
+    printf("Error.\n");
+
+  return 0;
+}
