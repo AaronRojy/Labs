@@ -44,7 +44,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
         this.setBackground(Color.black);
         this.setFocusable(true);
         this.addKeyListener(this);
-        this.addMouseListener(this);
+        //this.addMouseListener(this);
 
         startGame();
     }
@@ -56,15 +56,15 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
         timer.start();
 
         setBoardArrayEmpty();
-        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        ;
 
         setBoardArrayBorders();
         print3dArray();
-        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        ;
 
         levelOneSetup();
         print3dArray();
-        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        ;
 
     }
 
@@ -138,54 +138,6 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
             g.drawString("You Win!", (SCREEN_WIDTH - metrics.stringWidth("You Win!")) / 2, SCREEN_HEIGHT / 2);
             
         }
-        /*
-
-        for (int i = 0; i < boardArray.length; i++) {
-        for (int j = 0; j < boardArray[i].length; j++) {
-        if  (boardArray[i][j]==9){
-        //draw border
-        g.setColor(Color.black);
-        g.fillRect(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-        }
-        else if (boardArray[i][j]==1){
-        //draw nut
-        g.setColor(Color.LIGHT_GRAY);
-        g.fillOval(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-        }
-        else if (boardArray[i][j]==2){
-        //draw squrrel
-        g.setColor(Color.red);
-        g.fillOval(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-        }
-        else if (boardArray[i][j]==3){
-        //draw hole
-        g.setColor(Color.GRAY);
-        g.fillOval(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-        }
-        else if (boardArray[i][j]==0){
-        //draw empty
-        g.setColor(Color.GREEN);
-        g.fillRect(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-        }
-        else if (boardArray[i][j]==4||boardArray[i][j]==5||boardArray[i][j]==6||boardArray[i][j]==7||boardArray[i][j]==8){
-        //error
-        System.out.println("error"); // Move to next line after each row
-        }
-        System.out.println(j);
-        }
-
-        System.out.println(i);
-        System.out.println(); // Move to next line after each row
-        }
-         */
-
-        /*
-        g.setColor(Color.red);
-        g.fillOval(nutX, nutY, UNIT_SIZE, UNIT_SIZE);
-
-        g.setColor(Color.blue);
-        g.fillOval(squirrelX, squirrelY, UNIT_SIZE, UNIT_SIZE);
-         */
     }
 
     public void newNut() {
@@ -331,8 +283,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
     public void gameOver() {
         running = false;
         timer.stop();
-        setBoardArrayEmpty(); //clears the board array
-        repaint(); // Triggers draw() to display "You Win!"
+        setBoardArrayEmpty();
+        repaint();
     }
 
     public void print3dArray() {
@@ -340,7 +292,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
             for (int j = 0; j < boardArray[i].length; j++) {
                 System.out.print(boardArray[j][i] + " ");
             }
-            System.out.println(); // Move to next line after each row
+            System.out.println(); 
         }
 
     }
@@ -371,11 +323,6 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
         populateBoardArrayWithRandomHoles();
         populateBoardArrayWithRandomSquirrel();
         print3dArray();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Handle timer events here if needed
     }
 
     // KeyListener methods
@@ -430,12 +377,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener, Mo
     }
 
     @Override
+    public void actionPerformed(ActionEvent e) {}
+    
+    @Override
     public void keyReleased(KeyEvent e) { }
 
     @Override
     public void keyTyped(KeyEvent e) { }
 
-    // MouseListener methods
     @Override
     public void mouseClicked(MouseEvent e) { }
 
