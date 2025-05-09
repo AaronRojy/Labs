@@ -1,0 +1,453 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.util.Random;
+
+public class GamePanel extends JPanel implements ActionListener, KeyListener, MouseListener {
+    static final int SCREEN_WIDTH = 600;
+    static final int SCREEN_HEIGHT = 600;
+    static final int UNIT_SIZE = 100;
+    static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
+    static final int DELAY = 75;
+
+    final int[] x = new int[GAME_UNITS];
+    final int[] y = new int[GAME_UNITS];
+
+    int[][] boardArray = new int[6][6]; // [x axis][y axis]
+    int bodyParts = 1;
+    int squirrels = 1;
+    int squirrelX;
+    int squirrelY;
+    int nutX;
+    int nutY;
+    int holeX;
+    int holeY;
+
+    int nut_Code = 1;
+    int squirrel_Code = 2;
+    int hole_Code = 3;
+    int border_Code = 9;
+    int chain_length = 0;
+
+    int nutsEaten;
+    int direction = 1;//WASD  = 1234
+    boolean running = false;
+
+    boolean legal_Move = false;
+
+    Timer timer;
+    Random random;
+
+    GamePanel() {
+        random = new Random();
+        this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
+        this.setBackground(Color.black);
+        this.setFocusable(true);
+        this.addKeyListener(this);
+        this.addMouseListener(this);
+
+        startGame();
+    }
+
+    public void startGame() {
+        //newNut();
+        running = true;
+        timer = new Timer(DELAY, this);
+        timer.start();
+
+        setBoardArrayEmpty();
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+        setBoardArrayBorders();
+        print3dArray();
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+        levelOneSetup();
+        print3dArray();
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
+
+    public void draw(Graphics g) { 
+        Image borderImg= new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\border.png").getImage();
+        Image nutImg = new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\nut.png").getImage();
+        Image squirrelImg = new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\squirrel.png").getImage();
+        Image holeImg = new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\hole.png").getImage();
+        Image emptyImg = new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\grass.png").getImage();
+
+        Image squirrelHoleImg = new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\squirrelHole.png").getImage();
+        Image nutHoleImg = new ImageIcon("C:\\Users\\44742\\OneDrive - Lancaster University\\Labs\\java\\cache_noisettes\\images\\nutHole.png").getImage();
+        if (running) {
+            for (int i = 0; i < SCREEN_HEIGHT / UNIT_SIZE; i++) {
+                g.drawLine(i * UNIT_SIZE, 0, i * UNIT_SIZE, SCREEN_HEIGHT);
+                g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH, i * UNIT_SIZE);
+            }
+            int totalSquirrels = 0;
+            int totalNut = 0;
+            int totalHole = 0;
+            for (int i = 0; i < boardArray.length; i++) {
+                for (int j = 0; j < boardArray[i].length; j++) {
+                    int cell = boardArray[i][j];
+
+                    switch (cell) {
+                        case 0:
+                            g.drawImage(emptyImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            break;
+                        case 1:
+                            g.drawImage(nutImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            totalNut = totalNut + 1;
+                            break;
+                        case 2:
+                            g.drawImage(squirrelImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            totalSquirrels = totalSquirrels+ 1;
+                            break;
+                        case 3:
+                            g.drawImage(holeImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            break;
+                        case 4:
+                            g.drawImage(squirrelHoleImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            totalSquirrels = totalSquirrels+ 1;
+                            break;
+                        case 5:
+                            g.drawImage(nutHoleImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            break;
+                        case 9:
+                            g.drawImage(borderImg, i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE, this);
+                            break;
+                        default:
+                            System.out.println("Unknown cell value at [" + i + "][" + j + "]: " + cell);
+                    }
+                }
+            }
+
+            if (totalNut ==0){
+                gameOver();
+            }
+        }
+        else {
+            // Game Over - display "You Win!"
+            g.setColor(Color.white);
+            g.setFont(new Font("Ink Free", Font.BOLD, 75));
+            FontMetrics metrics = getFontMetrics(g.getFont());
+            g.drawString("You Win!", (SCREEN_WIDTH - metrics.stringWidth("You Win!")) / 2, SCREEN_HEIGHT / 2);
+            
+        }
+        /*
+
+        for (int i = 0; i < boardArray.length; i++) {
+        for (int j = 0; j < boardArray[i].length; j++) {
+        if  (boardArray[i][j]==9){
+        //draw border
+        g.setColor(Color.black);
+        g.fillRect(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+        }
+        else if (boardArray[i][j]==1){
+        //draw nut
+        g.setColor(Color.LIGHT_GRAY);
+        g.fillOval(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+        }
+        else if (boardArray[i][j]==2){
+        //draw squrrel
+        g.setColor(Color.red);
+        g.fillOval(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+        }
+        else if (boardArray[i][j]==3){
+        //draw hole
+        g.setColor(Color.GRAY);
+        g.fillOval(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+        }
+        else if (boardArray[i][j]==0){
+        //draw empty
+        g.setColor(Color.GREEN);
+        g.fillRect(i * UNIT_SIZE, j * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+        }
+        else if (boardArray[i][j]==4||boardArray[i][j]==5||boardArray[i][j]==6||boardArray[i][j]==7||boardArray[i][j]==8){
+        //error
+        System.out.println("error"); // Move to next line after each row
+        }
+        System.out.println(j);
+        }
+
+        System.out.println(i);
+        System.out.println(); // Move to next line after each row
+        }
+         */
+
+        /*
+        g.setColor(Color.red);
+        g.fillOval(nutX, nutY, UNIT_SIZE, UNIT_SIZE);
+
+        g.setColor(Color.blue);
+        g.fillOval(squirrelX, squirrelY, UNIT_SIZE, UNIT_SIZE);
+         */
+    }
+
+    public void newNut() {
+        nutX = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        nutY = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
+
+        squirrelX = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        squirrelY = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
+    }
+
+    public void levelOneSetup() {
+        /*
+        nutX = (random.nextInt(SCREEN_WIDTH / UNIT_SIZE) + 1) * UNIT_SIZE;
+        nutY = (random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) + 1) * UNIT_SIZE;
+
+        squirrelX = (random.nextInt(SCREEN_WIDTH / UNIT_SIZE) + 1) * UNIT_SIZE;
+        squirrelY = (random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) + 1) * UNIT_SIZE;
+         */
+        nutX = 2;
+        nutY = 2;
+        generateRandomNuts();
+
+        squirrelX = 3;
+        squirrelY = 3;
+        populateBoardArrayWithRandomSquirrel();
+
+        holeX = 4;
+        holeY = 4;
+        populateBoardArrayWithRandomHoles();
+
+    }
+
+    public void generateRandomNuts() {
+        boardArray[nutX][nutY] = nut_Code;//nut = 1 in array
+    }
+
+    public void populateBoardArrayWithRandomSquirrel() {
+        boardArray[squirrelX][squirrelY] = squirrel_Code;//squirrel = 2 in array
+    }
+
+    public void populateBoardArrayWithRandomHoles() {
+        boardArray[holeX][holeY] = hole_Code;//hole = 3 in array
+    }
+
+    public void checkCollisions(int direction) {
+        legal_Move = false;
+        chain_length = 0;
+
+        int dx = 0;
+        int dy = 0;
+
+        // Set the direction of movement
+        switch (direction) {
+            case 1: dy = -1; break; // up
+            case 2: dx = -1; break; // left
+            case 3: dy = 1; break;  // down
+            case 4: dx = 1; break;  // right
+        }
+
+        int currentX = squirrelX + dx;
+        int currentY = squirrelY + dy;
+
+        // Check for collisions or valid move
+        while (isWithinBounds(currentX, currentY)) {
+            int val = boardArray[currentX][currentY];
+
+            if (val == 0) {
+                // If it's an empty space or a hole, the move is legal
+                legal_Move = true;
+                return;
+            } else if (val == hole_Code) {
+                // If it's a nut or the squirrel going into the hole
+                legal_Move = true;
+                return;
+            } else if (val == nut_Code || val == squirrel_Code) {
+                // If it's a nut or the squirrel, add to the chain length
+                chain_length++;
+            } else if (val == border_Code) {
+                // If it's a border, stop the move and reset the chain length
+                chain_length = 0;
+                return;
+            }
+
+            currentX += dx;
+            currentY += dy;
+        }
+    }
+
+    public void move(int direction) {
+        if (!legal_Move) return;
+
+        int dx = 0, dy = 0;
+        switch (direction) {
+            case 1: dy = -1; break; // up
+            case 2: dx = -1; break; // left
+            case 3: dy = 1; break;  // down
+            case 4: dx = 1; break;  // right
+        }
+
+        for (int i = chain_length; i >= 0; i--) {
+            int fromX = squirrelX + dx * i;
+            int fromY = squirrelY + dy * i;
+            int toX = squirrelX + dx * (i + 1);
+            int toY = squirrelY + dy * (i + 1);
+
+            int movingVal = boardArray[fromX][fromY];
+            int destinationVal = boardArray[toX][toY];
+
+            // Reverse logic: convert from hole-forms to normal
+            if (movingVal == 4) movingVal = 2; // squirrel in hole → squirrel
+            else if (movingVal == 5) movingVal = 1; // nut in hole → nut
+
+            // If moving into hole
+            if (destinationVal == hole_Code) {
+                if (movingVal == nut_Code) {
+                    boardArray[toX][toY] = 5; // nut in hole
+                } else if (movingVal == squirrel_Code) {
+                    boardArray[toX][toY] = 4; // squirrel in hole
+                }
+            } else {
+                boardArray[toX][toY] = movingVal; // regular move
+            }
+
+            // Leave behind a hole if moved out of 4 or 5, else empty
+            int previousVal = boardArray[fromX][fromY];
+            if (previousVal == 4 || previousVal == 5) {
+                boardArray[fromX][fromY] = 3; // leave a hole
+            } else {
+                boardArray[fromX][fromY] = 0; // leave empty
+            }
+        }
+
+        squirrelX += dx;
+        squirrelY += dy;
+
+        repaint();
+    }
+
+    private boolean isWithinBounds(int x, int y) {
+        return x >= 0 && y >= 0 && x < boardArray.length && y < boardArray[0].length;
+    }
+
+    public void gameOver() {
+        running = false;
+        timer.stop();
+        setBoardArrayEmpty(); //clears the board array
+        repaint(); // Triggers draw() to display "You Win!"
+    }
+
+    public void print3dArray() {
+        for (int i = 0; i < boardArray.length; i++) {
+            for (int j = 0; j < boardArray[i].length; j++) {
+                System.out.print(boardArray[j][i] + " ");
+            }
+            System.out.println(); // Move to next line after each row
+        }
+
+    }
+
+    public void setBoardArrayEmpty() {
+        for (int i = 0; i < boardArray.length; i++) {
+            for (int j = 0; j < boardArray[i].length; j++) {
+                boardArray[i][j] = 0;
+            }
+        }
+    }
+
+    public void setBoardArrayBorders() {
+        for (int i = 0; i < boardArray.length; i++) {
+            for (int j = 0; j < boardArray[i].length; j++) {
+                if (i == 0||i == 5||j == 0||j == 5)
+                {
+                    boardArray[i][j] = border_Code;    
+                }
+            }
+        }
+    }
+
+    public void resetBoard() {
+        setBoardArrayEmpty();
+        setBoardArrayBorders();
+        generateRandomNuts();
+        populateBoardArrayWithRandomHoles();
+        populateBoardArrayWithRandomSquirrel();
+        print3dArray();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Handle timer events here if needed
+    }
+
+    // KeyListener methods
+    @Override
+    public void keyPressed(KeyEvent e) {
+        System.out.println("Key pressed: " + e.getKeyCode());
+
+        int key = e.getKeyCode();
+
+        if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
+            System.out.println("Move Up");
+            direction = 1;
+            checkCollisions(1);
+
+            move(1);
+            print3dArray();
+            //repaint();
+        } else if (key == KeyEvent.VK_S || key == KeyEvent.VK_DOWN) {
+            System.out.println("Move Down");
+            direction = 3;
+            checkCollisions(3);
+            move(3);
+            print3dArray();
+            //repaint();
+        } else if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
+            System.out.println("Move Left");
+            direction = 2;
+            checkCollisions(2);
+            move(2);
+            print3dArray();
+            //repaint();
+        } else if (key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) {
+            System.out.println("Move Right");
+            direction = 4;
+            checkCollisions(4);
+            move(4);
+            print3dArray();
+            //repaint();
+
+        }
+
+        /*wsad up down left right
+        87
+        83
+        65
+        68
+        38
+        40
+        37
+        39
+         */
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) { }
+
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
+    // MouseListener methods
+    @Override
+    public void mouseClicked(MouseEvent e) { }
+
+    @Override
+    public void mousePressed(MouseEvent e) { }
+
+    @Override
+    public void mouseReleased(MouseEvent e) { }
+
+    @Override
+    public void mouseEntered(MouseEvent e) { }
+
+    @Override
+    public void mouseExited(MouseEvent e) { }
+}

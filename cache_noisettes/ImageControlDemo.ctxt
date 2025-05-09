@@ -1,0 +1,15 @@
+#BlueJ class context
+comment0.target=ImageControlDemo
+comment1.params=
+comment1.target=ImageControlDemo()
+comment2.params=g
+comment2.target=void\ paintComponent(java.awt.Graphics)
+comment3.params=e
+comment3.target=void\ keyPressed(java.awt.event.KeyEvent)
+comment4.params=e
+comment4.target=void\ keyReleased(java.awt.event.KeyEvent)
+comment5.params=e
+comment5.target=void\ keyTyped(java.awt.event.KeyEvent)
+comment6.params=args
+comment6.target=void\ main(java.lang.String[])
+numComments=7
